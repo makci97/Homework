@@ -1,0 +1,8 @@
+7
+001 Ivakhenko 5
+002 Petrov 4
+003 Ivanov 5
+004 Jolondkovskii 5 
+005 Kiselev 5
+006 Dervyanko 5
+007 Dereka 4  

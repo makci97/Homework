@@ -1,0 +1,4 @@
+cmake_minimum_required(VERSION 2.8)
+
+project(String) 
+add_executable(String main.cpp String.cpp)
