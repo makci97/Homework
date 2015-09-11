@@ -7,14 +7,16 @@
 #include <vector>
 #include <utility>
 #include <stdexcept>
+#include <tuple>
 
-template<typename T>
+template<typename T, typename W>
 class Graph
 {
 public:
     struct Edge;
     Graph(){}
-    Graph(const std::vector<std::pair<T, T> >& graph);
+    Graph(const std::vector<std::tuple<T, T, W> >& graph);
+    Graph(const std::vector<Graph::Edge>& graph);
     Graph(const Graph& graph):_graph(graph._graph) {}
 
     Graph& operator=(const Graph& other);
@@ -23,7 +25,7 @@ public:
 
     void Transp();
     void AddVertex(const T& vertex);
-    void AddEdge(const T& first_vertex, const T& second_vertex);
+    void AddEdge(const T& first_vertex, const T& second_vertex, const W& weight);
     std::vector<Graph::Edge> GetEdgesOfVertrix(const T& vertex);
     std::vector<T> GetVertexesOfEdgesOfVertrix(const T& vertex);
     std::vector<Graph::Edge> GetEdgesEnteringInVertrix(const T& vertex);
@@ -31,114 +33,142 @@ public:
     std::vector<Graph::Edge> GetAllEdges();
     std::vector<T> GetAllVertexes();
 
-    typename std::set<T>::iterator GetBeginOfNeighbors(const T& vertex) const;
-    typename std::set<T>::iterator GetEndOfNeighbors(const T& vertex) const;
+    typename std::map<T, W>::iterator GetBeginOfNeighbors(const T& vertex) const;
+    typename std::map<T, W>::iterator GetEndOfNeighbors(const T& vertex) const;
 
-    class DepthIterator
+    class Iterator
     {
-    typedef typename std::map<T, std::set<T> >::iterator Iterator;
+    typedef typename std::map<T, std::map<T, W> >::iterator TIterator;
     public:
-        DepthIterator() {}
-        DepthIterator(Graph& graph);
-        DepthIterator& operator=(const typename Graph::DepthIterator& dit);
-        DepthIterator& operator++();
-        DepthIterator& operator--();
+        Iterator() {}
+        Iterator(Graph& graph);
+        Iterator& operator=(const typename Graph::Iterator& dit);
+        Iterator& operator++();
+        Iterator& operator--();
 
-        bool operator==(const typename Graph::DepthIterator& dit) const;
-        bool operator!=(const typename Graph::DepthIterator& dit) const;
+        bool operator==(const typename Graph::Iterator& dit) const;
+        bool operator!=(const typename Graph::Iterator& dit) const;
         T& operator*();
 
-        void SetDit(const Iterator& dit);
-        void SetStack(const typename std::stack<Iterator>& st);
-        void SetVisited(const typename std::set<T>& visited);
+        void SetDit(const TIterator& dit);
+
 
     private:
-        Graph<T>* _gr;
-        Iterator _dit;
-        typename std::stack<Iterator> _stack;
-        typename std::set<T> _visited;
-        typename std::list<std::pair<std::stack<Iterator>, T > > _change_graph; // стэк итераторов, которые были в _stack,
-        //когда подграф закончился и элемент, на который перешел итератор после ++
+        Graph<T, W>* _gr;
+        TIterator _dit;
     };
 
-    DepthIterator Dbegin();
-    DepthIterator Dend();
+
+    Iterator Begin();
+    Iterator End();
 
 
     struct Edge
     {
         T _first;
         T _second;
+        W _weight;
         bool operator==(const Edge& other);
         bool operator!=(const Edge& other);
     };
 
 private:
-    std::map<T, std::set<T> > _graph;
+    std::map<T, std::map<T, W> > _graph;
 };
 
-template<typename T>
-std::ostream& operator << (std::ostream &stream, const typename Graph<T>::Edge& edge);
+template<typename T, typename W>
+std::ostream& operator << (std::ostream &stream, const typename Graph<T, W>::Edge& edge);
 //*********************************************************************************
 //Class Graph
 //*********************************************************************************
 
-template<typename T>
-Graph<T>::Graph(const std::vector<std::pair<T, T> >& graph)
+
+template<typename T, typename W>
+Graph<T, W>::Graph(const std::vector<Graph::Edge>& graph)
 {
     for(auto it_vec = graph.begin(), end_vec = graph.end(); it_vec != end_vec; ++it_vec)
     {
-        auto it_graph = _graph.find(it_vec -> first);
+        auto it_graph = _graph.find(it_vec -> _first);
         if( it_graph != _graph.end() )
         {
-            it_graph -> second.insert(it_vec -> second);
+            it_graph -> second.insert({it_vec -> _second, it_vec -> _weight});
         }
         else
         {
-            std::set<T> buf;
-            buf.insert(it_vec -> second);
-            _graph[it_vec -> first] = buf;
+            std::map<T, W> buf;
+            buf.insert({it_vec -> _second, it_vec -> _weight});
+            _graph[it_vec -> _first] = buf;
         }
 
-        if(_graph.find(it_vec -> second) == _graph.end())
+        if(_graph.find(it_vec -> _second) == _graph.end())
         {
-            std::set<T> buf;
-            _graph[it_vec -> second] = buf;
+            std::map<T, W> buf;
+            _graph[it_vec -> _second] = buf;
         }
 
     }
 }
 
-template<typename T>
-void Graph<T>::Transp()
+
+template<typename T, typename W>
+Graph<T, W>::Graph(const std::vector<std::tuple<T, T, W> >& graph)
 {
-    Graph<T> buf_graph;
+    for(auto it_vec = graph.begin(), end_vec = graph.end(); it_vec != end_vec; ++it_vec)
+    {
+        auto it_graph = _graph.find(std::get<0>(*it_vec));
+        if( it_graph != _graph.end() )
+        {
+            it_graph -> second.insert({std::get<1>(*it_vec), std::get<2>(*it_vec)});
+        }
+        else
+        {
+            std::map<T, W> buf;
+            buf.insert({std::get<1>(*it_vec), std::get<2>(*it_vec)});
+            _graph[std::get<0>(*it_vec)] = buf;
+        }
+
+        if(_graph.find(std::get<1>(*it_vec)) == _graph.end())
+        {
+            std::map<T, W> buf;
+            _graph[std::get<1>(*it_vec)] = buf;
+        }
+
+    }
+}
+
+
+template<typename T, typename W>
+void Graph<T, W>::Transp()
+{
+    Graph<T, W> buf_graph;
 
     auto it_graph = _graph.begin(), end_graph = _graph.end();
 
     while( it_graph != end_graph )
     {
-        auto it_set_graph = it_graph -> second.begin(), end_set_graph = it_graph -> second.end();
-        std::set<T> buf;
+        auto it_map_graph = it_graph -> second.begin(), end_map_graph = it_graph -> second.end();
+        std::map<T,W> buf;
 
         if(buf_graph._graph.find(it_graph -> first) == buf_graph._graph.end())
             buf_graph._graph[it_graph -> first] = buf;
 
         buf.insert(it_graph -> first);
 
-        while( it_set_graph != end_set_graph )
+        while( it_map_graph != end_map_graph )
         {
-            auto it_for_push = buf_graph._graph.find(*it_set_graph);
+            auto it_for_push = buf_graph._graph.find(*it_map_graph);
             if( it_for_push != buf_graph._graph.end() )
             {
-                it_for_push -> second.insert(it_graph -> first);
+                it_for_push -> second.insert({it_graph -> first, it_map_graph -> second});
             }
             else
             {
-                buf_graph._graph[*it_set_graph] = buf;
+                std::map<T,W> buffer;
+                buffer.insert({it_graph -> first, it_map_graph -> second});
+                buf_graph._graph[*it_map_graph] = buffer;
             }
 
-            ++it_set_graph;
+            ++it_map_graph;
         }
 
         ++it_graph;
@@ -147,100 +177,108 @@ void Graph<T>::Transp()
     *this = buf_graph;
 }
 
-template<typename T>
-void Graph<T>::AddVertex(const T& vertex)
+
+template<typename T, typename W>
+void Graph<T, W>::AddVertex(const T& vertex)
 {
     if( _graph.find(vertex) == _graph.end() )
     {
-        std::set<T> buf;
+        std::map<T, W> buf;
         _graph[vertex] = buf;
     }
 }
 
-template<typename T>
-void Graph<T>::AddEdge(const T& first_vertex, const T& second_vertex)
+
+template<typename T, typename W>
+void Graph<T, W>::AddEdge(const T& first_vertex, const T& second_vertex, const W& weight)
 {
     auto it = _graph.find(first_vertex);
     if( it != _graph.end() )
     {
-        it -> second.insert(second_vertex);
+        it -> second.insert({second_vertex, weight});
     }
     else
     {
-        std::set<T> buf;
-        buf.insert(second_vertex);
+        std::map<T, W> buf;
+        buf.insert({second_vertex, weight});
         _graph[first_vertex] = buf;
     }
 
     if(_graph.find(second_vertex) == _graph.end())
     {
-        std::set<T> buffer;
+        std::map<T, W> buffer;
         _graph[second_vertex] = buffer;
     }
 
 }
 
-template<typename T>
-typename std::vector<typename Graph<T>::Edge> Graph<T>::GetEdgesOfVertrix(const T& vertex)
+
+template<typename T, typename W>
+typename std::vector<typename Graph<T, W>::Edge> Graph<T, W>::GetEdgesOfVertrix(const T& vertex)
 {
     auto it_graph = _graph.find(vertex);
-    std::vector<typename Graph<T>::Edge> result;
+    std::vector<typename Graph<T, W>::Edge> result;
 
     if(it_graph != _graph.end())
     {
-        auto it_set = it_graph -> second.begin(), end_set = it_graph -> second.end();
+        auto it_map = it_graph -> second.begin(), end_map = it_graph -> second.end();
 
-        typename Graph<T>::Edge buf;
+        typename Graph<T, W>::Edge buf;
         buf._first = vertex;
 
-        while(it_set != end_set)
+        while(it_map != end_map)
         {
-            buf._second = *it_set;
+            buf._second = it_map -> first;
+            buf._weight = it_map -> second;
             result.push_back(buf);
-            ++it_set;
+            ++it_map;
         }
     }
 
     return result;
 }
 
-template<typename T>
-std::vector<T> Graph<T>::GetVertexesOfEdgesOfVertrix(const T& vertex)
+
+template<typename T, typename W>
+std::vector<T> Graph<T, W>::GetVertexesOfEdgesOfVertrix(const T& vertex)
 {
     std::vector<T> result;
 
     auto it_graph = _graph.find(vertex);
     if(it_graph != _graph.end())
     {
-        auto it_set = it_graph -> second.begin(), end_set = it_graph -> second.end();
+        auto it_map = it_graph -> second.begin(), end_map = it_graph -> second.end();
 
-        while(it_set != end_set)
+        while(it_map != end_map)
         {
-            result.push_back(*it_set);
-            ++it_set;
+            result.push_back(it_map -> first);
+            ++it_map;
         }
     }
 
     return result;
 }
 
-template<typename T>
-typename std::vector<typename Graph<T>::Edge> Graph<T>::GetEdgesEnteringInVertrix(const T& vertex)
+
+template<typename T, typename W>
+typename std::vector<typename Graph<T, W>::Edge> Graph<T, W>::GetEdgesEnteringInVertrix(const T& vertex)
 {
     auto it_this = _graph.find(vertex);
-    std::vector<typename Graph<T>::Edge> result;
+    std::vector<typename Graph<T, W>::Edge> result;
 
     if(it_this != _graph.end())
     {
         auto it_graph = _graph.begin(), end_graph = _graph.end();
-        typename Graph<T>::Edge buf;
+        typename Graph<T, W>::Edge buf;
         buf._second = it_this -> first;
 
         while(it_graph != end_graph)
         {
-            if(it_graph -> second.find(it_this -> first) != it_graph -> second.end())
+            auto it_map = it_graph -> second.find(it_this -> first), end_map = it_graph -> second.end();
+            if(it_map != end_map)
             {
                 buf._first = it_graph -> first;
+                buf._weight = it_map -> second;
                 result.push_back(buf);
             }
             ++it_graph;
@@ -250,8 +288,9 @@ typename std::vector<typename Graph<T>::Edge> Graph<T>::GetEdgesEnteringInVertri
     return result;
 }
 
-template<typename T>
-std::vector<T> Graph<T>::GetVertexesOfEdgesEnteringInVertrix(const T& vertex)
+
+template<typename T, typename W>
+std::vector<T> Graph<T, W>::GetVertexesOfEdgesEnteringInVertrix(const T& vertex)
 {
     std::vector<T> result;
 
@@ -275,24 +314,25 @@ std::vector<T> Graph<T>::GetVertexesOfEdgesEnteringInVertrix(const T& vertex)
 }
 
 
-template<typename T>
-typename std::vector<typename Graph<T>::Edge> Graph<T>::GetAllEdges()
+template<typename T, typename W>
+typename std::vector<typename Graph<T, W>::Edge> Graph<T, W>::GetAllEdges()
 {
     auto it_graph = _graph.begin(), end_graph = _graph.end();
-    std::vector<typename Graph<T>::Edge> result;
+    std::vector<typename Graph<T, W>::Edge> result;
 
     while(it_graph != end_graph)
     {
-        auto it_set = it_graph -> second.begin(), end_set = it_graph -> second.end();
-        typename Graph<T>::Edge buf;
+        auto it_map = it_graph -> second.begin(), end_map = it_graph -> second.end();
+        typename Graph<T, W>::Edge buf;
         buf._first = it_graph -> first;
 
-        while(it_set != end_set)
+        while(it_map != end_map)
         {
-            buf._second = *it_set;
+            buf._second = it_map -> first;
+            buf._weight = it_map -> second;
             result.push_back(buf);
 
-            ++it_set;
+            ++it_map;
         }
 
         ++it_graph;
@@ -301,8 +341,9 @@ typename std::vector<typename Graph<T>::Edge> Graph<T>::GetAllEdges()
     return result;
 }
 
-template<typename T>
-std::vector<T> Graph<T>::GetAllVertexes()
+
+template<typename T, typename W>
+std::vector<T> Graph<T, W>::GetAllVertexes()
 {
 
     auto it_graph = _graph.begin(), end_graph = _graph.end();
@@ -318,251 +359,163 @@ std::vector<T> Graph<T>::GetAllVertexes()
     return result;
 }
 
-template<typename T>
-typename std::set<T>::iterator Graph<T>::GetBeginOfNeighbors(const T& vertex) const
+
+template<typename T, typename W>
+typename std::map<T, W>::iterator Graph<T, W>::GetBeginOfNeighbors(const T& vertex) const
 {
     auto it = _graph.find(vertex);
     if(it != _graph.end())
         return it -> second.begin();
 }
 
-template<typename T>
-typename std::set<T>::iterator Graph<T>::GetEndOfNeighbors(const T& vertex) const
+
+template<typename T, typename W>
+typename std::map<T, W>::iterator Graph<T, W>::GetEndOfNeighbors(const T& vertex) const
 {
     auto it = _graph.find(vertex);
     if(it != _graph.end())
         return it -> second.end();
 }
 
-template<typename T>
-typename Graph<T>::DepthIterator Graph<T>::Dbegin()
-{
-    Graph<T>::DepthIterator new_it(*this);
-    new_it.SetDit(_graph.begin());
 
-    typename std::stack<typename std::map<T, std::set<T> >::iterator> st;
-    st.push(_graph.begin());
-    new_it.SetStack(st);
-    typename std::set<T> visited;
-    visited.insert(_graph.begin() -> first);
-    new_it.SetVisited(visited);
+template<typename T, typename W>
+typename Graph<T, W>::Iterator Graph<T, W>::Begin()
+{    
+    Graph<T, W>::Iterator new_it(*this);
+    new_it.SetDit(_graph.begin());
 
     return new_it;
 }
 
-template<typename T>
-typename Graph<T>::DepthIterator Graph<T>::Dend()
+
+template<typename T, typename W>
+typename Graph<T, W>::Iterator Graph<T, W>::End()
 {
-    Graph<T>::DepthIterator new_it(*this);
+    Graph<T, W>::Iterator new_it(*this);
     new_it.SetDit(_graph.end());
 
     return new_it;
 }
 
-template<typename T>
-Graph<T>& Graph<T>::operator=(const Graph& other)
+
+template<typename T, typename W>
+Graph<T, W>& Graph<T, W>::operator=(const Graph& other)
 {
     _graph = other._graph;
 }
 
-template<typename T>
-bool Graph<T>::operator==(const Graph& other) const
+
+template<typename T, typename W>
+bool Graph<T, W>::operator==(const Graph& other) const
 {
     return _graph == other._graph;
 }
 
-template<typename T>
-bool Graph<T>::operator!=(const Graph& other) const
+
+template<typename T, typename W>
+bool Graph<T, W>::operator!=(const Graph& other) const
 {
     return _graph != other._graph;
 }
 
 
 //*********************************************************************************
-//Class DepthIterator
+//Class Iterator
 //*********************************************************************************
 
-template<typename T>
-Graph<T>::DepthIterator::DepthIterator(Graph<T>& graph)
+template<typename T, typename W>
+Graph<T, W>::Iterator::Iterator(Graph<T, W>& graph)
 {
     _gr = &graph;
 }
 
-template<typename T>
-typename Graph<T>::DepthIterator::DepthIterator& Graph<T>::DepthIterator::operator=(const typename Graph::DepthIterator& dit)
+
+template<typename T, typename W>
+typename Graph<T, W>::Iterator::Iterator&
+         Graph<T, W>::Iterator::operator=(const typename Graph::Iterator& dit)
+
 {
     _gr = dit._gr;
     _dit = dit._dit;
-    _stack = dit._stack;
-    _visited = dit._visited;
-    _change_graph = dit._change_graph;
-    return *this;
-}
-
-template<typename T>
-typename Graph<T>::DepthIterator::DepthIterator& Graph<T>::DepthIterator::operator++()
-{
-    bool test = true;
-    typename std::stack<Iterator> buf = _stack;
-
-    while( !_stack.empty() && test && _dit != _gr -> _graph.end())
-    {
-        auto it_set_this = _dit -> second.begin(), end_set_this = _dit -> second.end();
-        auto end_set_visited = _visited.end();
-        while(it_set_this != end_set_this && _visited.find(*it_set_this) != end_set_visited)
-            ++it_set_this;
-
-        if(it_set_this == end_set_this)
-        {
-            _stack.pop();
-
-            if( !_stack.empty() )
-            {
-                _dit = _stack.top();
-            }
-        }
-        else    //if(_visited.find(*it_set_this) == end_set_visited)
-        {
-            _dit = _gr -> _graph.find(*it_set_this);
-            _stack.push(_dit);
-            _visited.insert(_dit -> first);
-            test = false;
-        }
-
-    }
-
-    if(test && _visited.size() == _gr -> _graph.size())
-    {
-        *this = _gr -> Dend();
-    }
-
-    else if( test && _visited.size() != _gr -> _graph.size() && _dit != _gr -> _graph.end())
-    {
-        //std::cout << "dohel" << std::endl;
-        auto it_visited = _visited.begin(), end_visited = _visited.end();
-        auto it_graph = _gr -> _graph.begin(), end_graph = _gr -> _graph.end();
-        while(it_visited != end_visited && it_graph != end_graph && *it_visited == it_graph -> first)
-        {
-            ++it_visited;
-            ++it_graph;
-        }
-
-        if(it_graph == end_graph)
-        {
-            *this = _gr -> Dend();
-        }
-        else
-        {
-            _dit = it_graph;
-            _stack.push(_dit);
-            _change_graph.push_back({buf, _dit -> first});
-            _visited.insert(_dit -> first);
-
-        }
-    }
-
-
-    //std::cout << "visited.size = " << _visited.size() << "; graph.size = " << _gr -> _graph.size();
-    //std::cout << "; test = " << test << std::endl;
     return *this;
 }
 
 
-template<typename T>
-typename Graph<T>::DepthIterator::DepthIterator& Graph<T>::DepthIterator::operator--()
+template<typename T, typename W>
+typename Graph<T, W>::Iterator::Iterator&
+         Graph<T, W>::Iterator::operator++()
+
 {
-    if(*this != _gr -> Dbegin() && *this != _gr -> Dend())
-    {
-        _visited.erase(_dit -> first);
-        _stack.pop();
-
-        if(!_stack.empty())
-        {
-            auto it_this = _stack.top() -> second.find(_dit -> first);
-            if( it_this != _stack.top() -> second.begin() )
-            {
-                --it_this;
-                _dit = _gr -> _graph.find(*it_this);
-                _stack.push(_dit);
-            }
-            else
-            {
-                _dit = _stack.top();
-            }
-        }
-
-        else
-        {
-            _stack = _change_graph.back().first;
-            _change_graph.pop_back();
-            _dit = _stack.top();
-        }
-
-    }
+    if(_dit != _gr->_graph.end())
+        ++_dit;
 
     return *this;
 }
 
-template<typename T>
-bool Graph<T>::DepthIterator::operator==(const typename Graph<T>::DepthIterator& dit) const
+
+template<typename T, typename W>
+typename Graph<T, W>::Iterator::Iterator& Graph<T, W>::Iterator::operator--()
 {
-    return (_gr == dit._gr) && (_dit == dit._dit) && (_stack == dit._stack) &&
-           (_visited == dit._visited) && (_change_graph == dit._change_graph);
+    if(_dit != _gr->_graph.begin())
+        --_dit;
+
+    return *this;
+}
+
+template<typename T, typename W>
+bool Graph<T, W>::Iterator::operator==(const typename Graph<T, W>::Iterator& dit) const
+{
+    return (_gr == dit._gr) && (_dit == dit._dit);
 
 }
 
-template<typename T>
-bool Graph<T>::DepthIterator::operator!=(const typename Graph<T>::DepthIterator& dit) const
+
+template<typename T, typename W>
+bool Graph<T, W>::Iterator::operator!=(const typename Graph<T, W>::Iterator& dit) const
 {
     return !( *this == dit);
 }
 
-template<typename T>
-T& Graph<T>::DepthIterator::operator*()
+
+template<typename T, typename W>
+T& Graph<T, W>::Iterator::operator*()
 {
     return const_cast<T&>(_dit -> first);
 }
 
 
-
-template<typename T>
-void Graph<T>::DepthIterator::SetDit(const Iterator& dit)
+template<typename T, typename W>
+void Graph<T, W>::Iterator::SetDit(const TIterator& dit)
 {
     _dit = dit;
 }
-
-template<typename T>
-void Graph<T>::DepthIterator::SetStack(const typename std::stack<Iterator>& st)
-{
-    _stack = st;
-}
-
-template<typename T>
-void Graph<T>::DepthIterator::SetVisited(const typename std::set<T>& visited)
-{
-    _visited = visited;
-}
-
 
 //*********************************************************************************
 //Struct Edge
 //*********************************************************************************
 
-template<typename T>
-bool Graph<T>::Edge::operator==(const Graph<T>::Edge& other)
+template<typename T, typename W>
+bool Graph<T, W>::Edge::operator==(const Graph<T, W>::Edge& other)
 {
-    return (_first == other._first) && (_second == other._second);
+    return (_first == other._first)
+            && (_second == other._second)
+            && (_weight == other._weight);
 }
 
-template<typename T>
-bool Graph<T>::Edge::operator!=(const Graph<T>::Edge& other)
+
+template<typename T, typename W>
+bool Graph<T, W>::Edge::operator!=(const Graph<T, W>::Edge& other)
 {
     return !(*this == other);
 }
 
-template<typename T>
-std::ostream& operator << (std::ostream &stream, const typename Graph<T>::Edge& edge)
+
+template<typename T, typename W>
+std::ostream& operator << (std::ostream &stream, const typename Graph<T, W>::Edge& edge)
 {
-    stream << "{ "<< edge._first << "; "<< edge._second<< "}";
+    stream << "{ "<< edge._first << "; "
+           << edge._second << "; "
+           << edge._weight << "}";
+
     return stream;
 }
