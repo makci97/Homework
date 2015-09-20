@@ -1,8 +1,9 @@
 #include "SCC.h"
+#include "SortestWays.h"
 
 
 int main()
 {
-    SCC<int, int>();
+    ShortestWays<int, int>();
     return 0;
 }

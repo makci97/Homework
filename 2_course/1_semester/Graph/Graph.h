@@ -1,4 +1,5 @@
 #pragma once
+#include <climits>
 #include <iostream>
 #include <fstream>
 #include <map>
@@ -30,6 +31,8 @@ public:
     std::vector<T> GetVerticesOfEdgesEnteringInVertrex(const T& vertex);
     std::vector<Graph::Edge> GetAllEdges();
     std::vector<T> GetAllVertices();
+    W& GetWeight(const T& first, const T& second);
+    void Print();
 
     typename std::map<T, W>::iterator GetBeginOfNeighbors(const T& vertex) const;
     typename std::map<T, W>::iterator GetEndOfNeighbors(const T& vertex) const;
@@ -66,11 +69,13 @@ public:
         T _first;
         T _second;
         W _weight;
+        Edge(){}
         Edge(const T& first, const T& second, const W& weight):
             _first(first), _second(second), _weight(weight){}
 
         bool operator==(const Edge& other);
         bool operator!=(const Edge& other);
+        void Print();
     };
 
 private:
@@ -79,6 +84,9 @@ private:
 
 template<typename T, typename W>
 std::ostream& operator << (std::ostream &stream, const typename Graph<T, W>::Edge& edge);
+
+template<typename T, typename W>
+std::ostream& operator << (std::ostream &stream, Graph<T, W>& graph);
 //*********************************************************************************
 //Class Graph
 //*********************************************************************************
@@ -362,6 +370,7 @@ typename std::vector<typename Graph<T, W>::Edge> Graph<T, W>::GetAllEdges()
     {
         auto it_map = it_graph -> second.begin(), end_map = it_graph -> second.end();
         typename Graph<T, W>::Edge buf;
+
         buf._first = it_graph -> first;
 
         while(it_map != end_map)
@@ -395,6 +404,30 @@ std::vector<T> Graph<T, W>::GetAllVertices()
     }
 
     return result;
+}
+
+template<typename T, typename W>
+W& Graph<T, W>::GetWeight(const T& first, const T& second)
+{
+    if(_graph.find(first) != _graph.end() )
+        if(_graph.find(first) -> second.find(second) != _graph.find(first) -> second.end() )
+        {
+            return _graph.find(first) -> second.find(second) -> second;
+        }
+}
+
+
+template<typename T, typename W>
+void Graph<T, W>::Print()
+{
+    std::vector<typename Graph<T, W>::Edge> edges = this -> GetAllEdges();
+
+    for(auto it = edges.begin(), end = edges.end();
+        it != end;
+        ++it)
+    {
+        it -> Print();
+    }
 }
 
 
@@ -456,6 +489,21 @@ bool Graph<T, W>::operator!=(const Graph& other) const
     return _graph != other._graph;
 }
 
+
+template<typename T, typename W>
+std::ostream& operator << (std::ostream &stream, Graph<T, W>& graph)
+{
+    std::vector<typename Graph<T, W>::Edge> edges = graph.GetAllEdges();
+
+    for(auto it = edges.begin(), end = edges.end();
+        it != end;
+        ++it)
+    {
+        //stream << *it << std::endl;
+    }
+
+    return stream;
+}
 
 //*********************************************************************************
 //Class Iterator
@@ -551,11 +599,34 @@ bool Graph<T, W>::Edge::operator!=(const Graph<T, W>::Edge& other)
 template<typename T, typename W>
 std::ostream& operator << (std::ostream &stream, const typename Graph<T, W>::Edge& edge)
 {
-    stream << "{ "<< edge._first << "; "
-           << edge._second << "; "
-           << edge._weight << "}";
+    if(edge._weight != INT_MAX)
+    {
+        stream << "{ "<< edge._first << "; "
+               << edge._second << "; "
+               << edge._weight << "}";
+    }
+    else
+        stream << "{ "<< edge._first << "; "
+               << edge._second << "; "
+               << "00}";
 
     return stream;
+}
+
+
+template<typename T, typename W>
+void Graph<T, W>::Edge::Print()
+{
+    if(this -> _weight != INT_MAX)
+    {
+        std::cout << "{ "<< this -> _first << "; "
+                  << this -> _second << "; "
+                  << this -> _weight << "}";
+    }
+    else
+        std::cout << "{ "<< this -> _first << "; "
+                  << this -> _second << "; "
+                  << "00}";
 }
 
 //*********************************************************************************
