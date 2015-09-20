@@ -33,7 +33,7 @@ void Tarian(Graph<T, W>& graph, std::vector<std::list<T> >& SCC);
 template<typename T, typename W>
 void SCC()
 {
-    /*
+
     std::ifstream is("test_graph.txt");
     int flag, amount_edges, amount_vertices;
     is >> flag;
@@ -41,8 +41,8 @@ void SCC()
 
     Graph<int, int> graph;
     ReadGraph<int, int>(graph, amount_edges, is);
-    */
 
+/*
     int flag, amount_edges, amount_vertices;
     std::cin >> flag;
     std::cin >> amount_vertices >> amount_edges;
@@ -50,7 +50,7 @@ void SCC()
     Graph<int, int> graph;
 
     ReadGraph<int, int>(graph, amount_edges, std::cin);
-
+*/
     std::vector<std::list<T> > SCC;
     if(flag == 0)
         Tarian(graph, SCC);
@@ -162,7 +162,7 @@ void Kosaraju(Graph<T, W>& graph, std::vector<std::list<T> >& SCC)
     std::list<T> DFS_exit;
     std::map<T, unsigned int> timestamp;
 
-    DFS<T, W>(transp_graph, DFS_exit, timestamp);
+    DFS<T, W>(graph, DFS_exit, timestamp);
 
     while(!DFS_exit.empty())
     {
@@ -184,13 +184,13 @@ void Kosaraju(Graph<T, W>& graph, std::vector<std::list<T> >& SCC)
 
         std::list<T> SCC_buf;
 
-        DFSVisit<T, W>(graph, vertex, time, color, parent, discover_time, exit_time, timestamp, SCC_buf);
+        DFSVisit<T, W>(transp_graph, vertex, time, color, parent, discover_time, exit_time, timestamp, SCC_buf);
 
         for(auto it = SCC_buf.begin(), end = SCC_buf.end();
             it != end;
             ++it)
         {
-            graph.DeleteVertex(*it);
+            transp_graph.DeleteVertex(*it);
         }
 
         for(auto it = SCC_buf.begin(), end = SCC_buf.end();
