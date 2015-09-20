@@ -1,13 +1,9 @@
 #pragma once
 #include <iostream>
+#include <fstream>
 #include <map>
-#include <set>
-#include <stack>
-#include <list>
-#include <vector>
-#include <utility>
-#include <stdexcept>
 #include <tuple>
+#include <vector>
 
 template<typename T, typename W>
 class Graph
@@ -25,13 +21,15 @@ public:
 
     void Transp();
     void AddVertex(const T& vertex);
+    void DeleteVertex(const T& vertex);
     void AddEdge(const T& first_vertex, const T& second_vertex, const W& weight);
-    std::vector<Graph::Edge> GetEdgesOfVertrix(const T& vertex);
-    std::vector<T> GetVertexesOfEdgesOfVertrix(const T& vertex);
-    std::vector<Graph::Edge> GetEdgesEnteringInVertrix(const T& vertex);
-    std::vector<T> GetVertexesOfEdgesEnteringInVertrix(const T& vertex);
+    void AddEdge(const Graph::Edge& edge);
+    std::vector<Graph::Edge> GetEdgesOfVertrex(const T& vertex);
+    std::vector<T> GetVerticesOfEdgesOfVertrex(const T& vertex);
+    std::vector<Graph::Edge> GetEdgesEnteringInVertrex(const T& vertex);
+    std::vector<T> GetVerticesOfEdgesEnteringInVertrex(const T& vertex);
     std::vector<Graph::Edge> GetAllEdges();
-    std::vector<T> GetAllVertexes();
+    std::vector<T> GetAllVertices();
 
     typename std::map<T, W>::iterator GetBeginOfNeighbors(const T& vertex) const;
     typename std::map<T, W>::iterator GetEndOfNeighbors(const T& vertex) const;
@@ -68,6 +66,9 @@ public:
         T _first;
         T _second;
         W _weight;
+        Edge(const T& first, const T& second, const W& weight):
+            _first(first), _second(second), _weight(weight){}
+
         bool operator==(const Edge& other);
         bool operator!=(const Edge& other);
     };
@@ -152,11 +153,11 @@ void Graph<T, W>::Transp()
         if(buf_graph._graph.find(it_graph -> first) == buf_graph._graph.end())
             buf_graph._graph[it_graph -> first] = buf;
 
-        buf.insert(it_graph -> first);
+       // buf.insert(it_graph -> first);
 
         while( it_map_graph != end_map_graph )
         {
-            auto it_for_push = buf_graph._graph.find(*it_map_graph);
+            auto it_for_push = buf_graph._graph.find(it_map_graph -> first);
             if( it_for_push != buf_graph._graph.end() )
             {
                 it_for_push -> second.insert({it_graph -> first, it_map_graph -> second});
@@ -165,7 +166,7 @@ void Graph<T, W>::Transp()
             {
                 std::map<T,W> buffer;
                 buffer.insert({it_graph -> first, it_map_graph -> second});
-                buf_graph._graph[*it_map_graph] = buffer;
+                buf_graph._graph[it_map_graph -> first] = buffer;
             }
 
             ++it_map_graph;
@@ -188,6 +189,22 @@ void Graph<T, W>::AddVertex(const T& vertex)
     }
 }
 
+template<typename T, typename W>
+void Graph<T, W>::DeleteVertex(const T& vertex)
+{
+    if(_graph.find(vertex) != _graph.end() )
+    {
+        _graph.erase(_graph.find(vertex) );
+
+        for(auto it = _graph.begin(), end = _graph.end();
+            it != end;
+            ++it)
+        {
+            if((it -> second).find(vertex) != (it -> second).end() )
+                (it -> second).erase((it -> second).find(vertex));
+        }
+    }
+}
 
 template<typename T, typename W>
 void Graph<T, W>::AddEdge(const T& first_vertex, const T& second_vertex, const W& weight)
@@ -206,15 +223,36 @@ void Graph<T, W>::AddEdge(const T& first_vertex, const T& second_vertex, const W
 
     if(_graph.find(second_vertex) == _graph.end())
     {
-        std::map<T, W> buffer;
-        _graph[second_vertex] = buffer;
+        std::map<T, W> buf;
+        _graph[second_vertex] = buf;
     }
-
 }
 
 
 template<typename T, typename W>
-typename std::vector<typename Graph<T, W>::Edge> Graph<T, W>::GetEdgesOfVertrix(const T& vertex)
+void Graph<T, W>::AddEdge(const Graph<T,W>::Edge& edge)
+{
+    auto it = _graph.find(edge._first);
+    if( it != _graph.end() )
+    {
+        it -> second.insert({edge._second, edge._weight});
+    }
+    else
+    {
+        std::map<T, W> buf;
+        buf.insert({edge._second, edge._weight});
+        _graph[edge._first] = buf;
+    }
+
+    if(_graph.find(edge._second) == _graph.end())
+    {
+        std::map<T, W> buf;
+        _graph[edge._second] = buf;
+    }
+
+}
+template<typename T, typename W>
+typename std::vector<typename Graph<T, W>::Edge> Graph<T, W>::GetEdgesOfVertrex(const T& vertex)
 {
     auto it_graph = _graph.find(vertex);
     std::vector<typename Graph<T, W>::Edge> result;
@@ -240,7 +278,7 @@ typename std::vector<typename Graph<T, W>::Edge> Graph<T, W>::GetEdgesOfVertrix(
 
 
 template<typename T, typename W>
-std::vector<T> Graph<T, W>::GetVertexesOfEdgesOfVertrix(const T& vertex)
+std::vector<T> Graph<T, W>::GetVerticesOfEdgesOfVertrex(const T& vertex)
 {
     std::vector<T> result;
 
@@ -261,7 +299,7 @@ std::vector<T> Graph<T, W>::GetVertexesOfEdgesOfVertrix(const T& vertex)
 
 
 template<typename T, typename W>
-typename std::vector<typename Graph<T, W>::Edge> Graph<T, W>::GetEdgesEnteringInVertrix(const T& vertex)
+typename std::vector<typename Graph<T, W>::Edge> Graph<T, W>::GetEdgesEnteringInVertrex(const T& vertex)
 {
     auto it_this = _graph.find(vertex);
     std::vector<typename Graph<T, W>::Edge> result;
@@ -290,7 +328,7 @@ typename std::vector<typename Graph<T, W>::Edge> Graph<T, W>::GetEdgesEnteringIn
 
 
 template<typename T, typename W>
-std::vector<T> Graph<T, W>::GetVertexesOfEdgesEnteringInVertrix(const T& vertex)
+std::vector<T> Graph<T, W>::GetVerticesOfEdgesEnteringInVertrex(const T& vertex)
 {
     std::vector<T> result;
 
@@ -343,7 +381,7 @@ typename std::vector<typename Graph<T, W>::Edge> Graph<T, W>::GetAllEdges()
 
 
 template<typename T, typename W>
-std::vector<T> Graph<T, W>::GetAllVertexes()
+std::vector<T> Graph<T, W>::GetAllVertices()
 {
 
     auto it_graph = _graph.begin(), end_graph = _graph.end();
@@ -518,4 +556,29 @@ std::ostream& operator << (std::ostream &stream, const typename Graph<T, W>::Edg
            << edge._weight << "}";
 
     return stream;
+}
+
+//*********************************************************************************
+
+template<typename T, typename W>
+bool ReadGraph(Graph<T,W>& g, int amount_edges, std::istream &in)
+{
+    for(int i = 0; i < amount_edges; ++i)
+    {
+        T first;
+        if(!(in >> first))
+            throw std::logic_error("bad graph format: vertex");
+
+        T second;
+        if(!(in >> second))
+            throw std::logic_error("bad graph format: vertex");
+
+        W weight;
+        if(!(in >> weight))
+            throw std::logic_error("bad graph format: weight");
+
+        g.AddEdge(first, second, weight);
+    }
+
+    return true;
 }

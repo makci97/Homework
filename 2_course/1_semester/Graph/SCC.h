@@ -9,7 +9,9 @@
 #include <vector>
 #include "Graph.h"
 
+
 enum Color { white, grey, black};
+
 
 template<typename T, typename W>
 void DFSVisit(Graph<T, W>& graph, T vertex, unsigned int& time,
@@ -19,12 +21,19 @@ void DFSVisit(Graph<T, W>& graph, T vertex, unsigned int& time,
               std::map<T, int>& exit_time,
               std::map<T, int>& timestamp);
 
+
 template<typename T, typename W>
-void Kosaraju(Graph<T, W>& graph);
+void Kosaraju(Graph<T, W>& graph, std::vector<std::list<T> >& SCC);
+
+
+template<typename T, typename W>
+void Tarian(Graph<T, W>& graph, std::vector<std::list<T> >& SCC);
+
 
 template<typename T, typename W>
 void SCC()
 {
+    /*
     std::ifstream is("test_graph.txt");
     int flag, amount_edges, amount_vertices;
     is >> flag;
@@ -32,8 +41,8 @@ void SCC()
 
     Graph<int, int> graph;
     ReadGraph<int, int>(graph, amount_edges, is);
+    */
 
-    /*
     int flag, amount_edges, amount_vertices;
     std::cin >> flag;
     std::cin >> amount_vertices >> amount_edges;
@@ -41,14 +50,25 @@ void SCC()
     Graph<int, int> graph;
 
     ReadGraph<int, int>(graph, amount_edges, std::cin);
-    */
 
     std::vector<std::list<T> > SCC;
-    //if(flag == 0)
-        //Tarian(graph, n, m);
+    if(flag == 0)
+        Tarian(graph, SCC);
 
-    /*else*/ if(flag == 1)
+    else if(flag == 1)
         Kosaraju(graph, SCC);
+
+    std::sort(SCC.begin(), SCC.end(), [&](std::list<T> first, std::list<T> second)
+    {
+        if(first.size() < second.size() )
+            return true;
+        else if(first.size() > second.size() )
+            return false;
+        else
+        {
+            return (first.front() < second.front() );
+        }
+    });
 
     std::cout << SCC.size() << std::endl;
 
@@ -97,6 +117,7 @@ void DFS(Graph<T, W>& graph, std::list<T>& DFS_exit, std::map<T, unsigned int>& 
     });
 }
 
+
 template<typename T, typename W>
 void DFSVisit(Graph<T, W>& graph, T vertex, unsigned int& time,
               std::map<T, Color>& color,
@@ -132,6 +153,7 @@ void DFSVisit(Graph<T, W>& graph, T vertex, unsigned int& time,
     DFS_exit.push_back(vertex);
 }
 
+
 template<typename T, typename W>
 void Kosaraju(Graph<T, W>& graph, std::vector<std::list<T> >& SCC)
 {
@@ -144,17 +166,6 @@ void Kosaraju(Graph<T, W>& graph, std::vector<std::list<T> >& SCC)
 
     while(!DFS_exit.empty())
     {
-        /*
-        std::cout << "DFS_exit: ";
-        for(auto it = DFS_exit.begin(), end = DFS_exit.end();
-            it != end;
-            ++it)
-        {
-            std::cout << *it << "\t";
-        }
-        std::cout << "" << std::endl;
-        */
-
         T vertex = DFS_exit.back();
 
         std::map<T, Color> color;
@@ -175,40 +186,55 @@ void Kosaraju(Graph<T, W>& graph, std::vector<std::list<T> >& SCC)
 
         DFSVisit<T, W>(graph, vertex, time, color, parent, discover_time, exit_time, timestamp, SCC_buf);
 
-        //std::cout << "SCC_buf: ";
         for(auto it = SCC_buf.begin(), end = SCC_buf.end();
             it != end;
             ++it)
         {
             graph.DeleteVertex(*it);
-            //std::cout << *it << "\t";
         }
-        //std::cout << "" << std::endl;
 
         for(auto it = SCC_buf.begin(), end = SCC_buf.end();
             it != end;
             ++it)
         {
-            //std::cout << "ok " << *it << std::endl;
             DFS_exit.erase(std::find(DFS_exit.begin(), DFS_exit.end(), *it) );
-
-            //std::cout << "?" << std::endl;
         }
-        //std::cout << "okay" << std::endl;
 
         SCC_buf.sort();
         SCC.push_back(SCC_buf);
     }
+}
 
-    std::sort(SCC.begin(), SCC.end(), [&](std::list<T> first, std::list<T> second)
+
+template<typename T, typename W>
+void Tarian(Graph<T, W>& graph, std::vector<std::list<T> >& SCC)
+{
+    std::list<T> DFS_exit;
+    std::map<T, unsigned int> timestamp;
+    DFS(graph, DFS_exit, timestamp);
+
+    std::multimap<unsigned int, T> for_sort;
+
+    for(auto it = timestamp.begin(), end = timestamp.end();
+        it != end;
+        ++it)
     {
-        if(first.size() < second.size() )
-            return true;
-        else if(first.size() > second.size() )
-            return false;
-        else
+        for_sort.insert({it -> second, it -> first});
+    }
+
+    for(auto it = for_sort.begin(), end = for_sort.end();
+        it != end;)
+    {
+        unsigned int stamp = it -> first;
+        std::list<T> component_connectivity;
+
+        while(it != end && it -> first == stamp)
         {
-            return (first.front() < second.front() );
+            component_connectivity.push_back(it -> second);
+            ++it;
         }
-    });
+
+        component_connectivity.sort();
+        SCC.push_back(component_connectivity);
+    }
 }
