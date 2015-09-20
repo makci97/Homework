@@ -33,7 +33,7 @@ void Tarian(Graph<T, W>& graph, std::vector<std::list<T> >& SCC);
 template<typename T, typename W>
 void SCC()
 {
-
+/*
     std::ifstream is("test_graph.txt");
     int flag, amount_edges, amount_vertices;
     is >> flag;
@@ -41,8 +41,7 @@ void SCC()
 
     Graph<int, int> graph;
     ReadGraph<int, int>(graph, amount_edges, is);
-
-/*
+*/
     int flag, amount_edges, amount_vertices;
     std::cin >> flag;
     std::cin >> amount_vertices >> amount_edges;
@@ -50,7 +49,7 @@ void SCC()
     Graph<int, int> graph;
 
     ReadGraph<int, int>(graph, amount_edges, std::cin);
-*/
+
     std::vector<std::list<T> > SCC;
     if(flag == 0)
         Tarian(graph, SCC);
