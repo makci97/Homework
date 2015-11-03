@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <map>
+#include <stdexcept>
 #include <tuple>
 #include <vector>
 
@@ -33,6 +34,8 @@ public:
     std::vector<T> GetAllVertices();
     W& GetWeight(const T& first, const T& second);
     void Print();
+    void PrintFW();
+    void ReadGraph(int amount_edges, std::istream &in);
 
     typename std::map<T, W>::iterator GetBeginOfNeighbors(const T& vertex) const;
     typename std::map<T, W>::iterator GetEndOfNeighbors(const T& vertex) const;
@@ -420,13 +423,81 @@ W& Graph<T, W>::GetWeight(const T& first, const T& second)
 template<typename T, typename W>
 void Graph<T, W>::Print()
 {
-    std::vector<typename Graph<T, W>::Edge> edges = this -> GetAllEdges();
+    auto it_graph = _graph.begin(), end_graph = _graph.end();
+    std::vector<typename Graph<T, W>::Edge> result;
 
-    for(auto it = edges.begin(), end = edges.end();
-        it != end;
-        ++it)
+    while(it_graph != end_graph)
     {
-        it -> Print();
+        auto it_map = it_graph -> second.begin(), end_map = it_graph -> second.end();
+        typename Graph<T, W>::Edge buf;
+
+        buf._first = it_graph -> first;
+
+        while(it_map != end_map)
+        {
+            buf._second = it_map -> first;
+            buf._weight = it_map -> second;
+            buf.Print();
+            std::cout << " ";
+
+            ++it_map;
+        }
+
+        std::cout << std::endl;
+
+        ++it_graph;
+    }
+
+}
+
+
+template<typename T, typename W>
+void Graph<T, W>::PrintFW()
+{
+    auto it_graph = _graph.begin(), end_graph = _graph.end();
+    std::vector<typename Graph<T, W>::Edge> result;
+
+    while(it_graph != end_graph)
+    {
+        auto it_map = it_graph -> second.begin(), end_map = it_graph -> second.end();
+
+        while(it_map != end_map)
+        {
+            if(it_map -> second == INT_MAX)
+                std::cout << "-1\t";
+            else
+                std::cout << it_map -> second << "\t";
+
+            ++it_map;
+        }
+
+        std::cout << std::endl;
+
+        ++it_graph;
+    }
+
+}
+
+
+template<typename T, typename W>
+void Graph<T, W>::ReadGraph(int amount_edges, std::istream &in)
+{
+    for(int i = 0; i < amount_edges; ++i)
+    {
+        T first;
+        if(!(in >> first))
+            throw std::logic_error("bad graph format: vertex");
+
+        T second;
+        if(!(in >> second))
+            throw std::logic_error("bad graph format: vertex");
+
+        W weight;
+        if(!(in >> weight))
+            throw std::logic_error("bad graph format: weight");
+
+
+        this -> AddEdge(first, second, weight);
     }
 }
 
@@ -627,29 +698,4 @@ void Graph<T, W>::Edge::Print()
         std::cout << "{ "<< this -> _first << "; "
                   << this -> _second << "; "
                   << "00}";
-}
-
-//*********************************************************************************
-
-template<typename T, typename W>
-bool ReadGraph(Graph<T,W>& g, int amount_edges, std::istream &in)
-{
-    for(int i = 0; i < amount_edges; ++i)
-    {
-        T first;
-        if(!(in >> first))
-            throw std::logic_error("bad graph format: vertex");
-
-        T second;
-        if(!(in >> second))
-            throw std::logic_error("bad graph format: vertex");
-
-        W weight;
-        if(!(in >> weight))
-            throw std::logic_error("bad graph format: weight");
-
-        g.AddEdge(first, second, weight);
-    }
-
-    return true;
 }

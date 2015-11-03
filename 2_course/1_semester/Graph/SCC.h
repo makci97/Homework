@@ -30,63 +30,6 @@ template<typename T, typename W>
 void Tarian(Graph<T, W>& graph, std::vector<std::list<T> >& SCC);
 
 
-template<typename T, typename W>
-void SCC()
-{
-/*
-    std::ifstream is("test_graph.txt");
-    int flag, amount_edges, amount_vertices;
-    is >> flag;
-    is >> amount_vertices >> amount_edges;
-
-    Graph<int, int> graph;
-    ReadGraph<int, int>(graph, amount_edges, is);
-*/
-    int flag, amount_edges, amount_vertices;
-    std::cin >> flag;
-    std::cin >> amount_vertices >> amount_edges;
-
-    Graph<int, int> graph;
-
-    ReadGraph<int, int>(graph, amount_edges, std::cin);
-
-    std::vector<std::list<T> > SCC;
-    if(flag == 0)
-        Tarian(graph, SCC);
-
-    else if(flag == 1)
-        Kosaraju(graph, SCC);
-
-    std::sort(SCC.begin(), SCC.end(), [&](std::list<T> first, std::list<T> second)
-    {
-        if(first.size() < second.size() )
-            return true;
-        else if(first.size() > second.size() )
-            return false;
-        else
-        {
-            return (first.front() < second.front() );
-        }
-    });
-
-    std::cout << SCC.size() << std::endl;
-
-    for(auto it_SCC = SCC.begin(), end_SCC = SCC.end();
-        it_SCC != end_SCC;
-        ++it_SCC)
-    {
-        for(auto it = it_SCC -> begin(), end = it_SCC -> end();
-            it != end;
-            ++it)
-        {
-            std::cout << *it << "\t";
-        }
-        std::cout << "\n";
-    }
-
-}
-
-
 //DFS_exit for Kosaraju, timestamp for Tarian
 template<typename T, typename W>
 void DFS(Graph<T, W>& graph, std::list<T>& DFS_exit, std::map<T, unsigned int>& timestamp)

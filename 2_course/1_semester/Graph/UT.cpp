@@ -18,8 +18,7 @@ BOOST_AUTO_TEST_CASE(Read_graph)
     */
 
     Graph<int, int> graph;
-    bool test = ReadGraph<int, int>(graph, amount_edges, is);
-    BOOST_CHECK(test == true);
+    //ReadGraph<int, int>(graph, amount_edges, is);
 
-    SCC<int, int>();
+    //SCC<int, int>();
 }

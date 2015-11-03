@@ -1,9 +1,11 @@
 #include "SCC.h"
-#include "SortestWays.h"
+#include "ShortestWays.h"
+#include "Run.h"
 
 
 int main()
 {
-    ShortestWays<int, int>();
+    std::ifstream is("test_FW.txt");
+    Run<int, int>(is);
     return 0;
 }

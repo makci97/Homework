@@ -18,47 +18,41 @@ bool BellmanFord(Graph<T, W>& graph, const T& vertex, int amount_vertices);
 template<typename T, typename W>
 void FloydWarshall(Graph<T, W>& graph, int amount_vertices);
 
-template<typename T, typename W>
+template<typename T, typename W,
+             template<
+                 class P,
+                 class Container = std::vector<P>,
+                 class Compare = std::greater<typename Container::value_type>
+             > class priority_queue
+         >
 void Dijkstra(Graph<T, W>& graph, const T& vertex, int amount_vertices);
 
+template<typename T, typename W,
+             template<
+                 class P,
+                 class Container = std::vector<P>,
+                 class Compare = std::greater<typename Container::value_type>
+             > class priority_queue
+         >
+void AStar(Graph<T, W>& graph, const T& vertex, const T& target, std::map<T, W> heuristic, int amount_vertices);
+
+void Fifteen(std::vector<int>& start_position);
+
 template<typename T, typename W>
-void ShortestWays()
+void ReadHeuristic(std::map<T, W> heuristic, int amount_vertices, std::istream &in)
 {
-/*
-    std::ifstream is("test_D.txt");
-    int flag, amount_edges, amount_vertices;
     T vertex;
-    is >> flag;
-    if(flag == 0 || flag == 2)
+    W weight_heuristic;
+    for(int i = 0; i < amount_vertices; ++i)
     {
-        is >> vertex;
+        if(!(in >> vertex))
+            throw std::logic_error("bad graph format: vertex");
+
+        if(!(in >> weight_heuristic))
+            throw std::logic_error("bad graph format: vertex");
+
+        heuristic[vertex] = weight_heuristic;
     }
-    is >> amount_vertices >> amount_edges;
-
-    Graph<int, int> graph;
-    ReadGraph<int, int>(graph, amount_edges, is);
-*/
-
-    int flag, amount_edges, amount_vertices;
-    T vertex;
-    std::cin >> flag;
-    if(flag == 0 || flag == 2)
-    {
-        std::cin >> vertex;
-    }
-    std::cin >> amount_vertices >> amount_edges;
-
-    Graph<int, int> graph;
-
-    ReadGraph<int, int>(graph, amount_edges, std::cin);
-
-    if(flag == 0)
-        BellmanFord(graph, vertex, amount_vertices);
-    else if(flag == 1)
-        FloydWarshall(graph, amount_vertices);
-    else if(flag == 2)
-        Dijkstra(graph, vertex, amount_vertices);
-
 }
 
 
@@ -93,16 +87,17 @@ bool BellmanFord(Graph<T, W>& graph, const T& vertex, int amount_vertices)
         ++it)
     {
         if(shortest_ways[it -> _first] < shortest_ways[it -> _second] - it -> _weight)
-        {\
-            return false;\
+        {
+            std::cout << "-1" << std::endl;
+            return false;
         }
     }
 
-    std::cout << "false" << std::endl;
+
     for_each(shortest_ways.begin(), shortest_ways.end(), [&](const std::pair<T, W>& way)
     {
         if(way.second == INT_MAX)
-            std::cout << way.first << " -> " << "00" << std::endl;
+            std::cout << way.first << " -> " << "-1" << std::endl;
         else
             std::cout << way.first << " -> " << way.second << std::endl;
     });
@@ -161,7 +156,7 @@ void FloydWarshall(Graph<T, W>& graph, int amount_vertices)
 
     }
 
-    shortest_ways.Print();
+    shortest_ways.PrintFW();
 }
 
 /*
@@ -170,6 +165,7 @@ template<typename T, typename W,
          class Container// = std::multimap
          >
 */
+/*
 template<typename T, typename W>
 void Dijkstra(Graph<T, W>& graph, const T& vertex, int amount_vertices)
 {
@@ -192,52 +188,206 @@ void Dijkstra(Graph<T, W>& graph, const T& vertex, int amount_vertices)
         shortest_ways[vertex] = 0;
 
 
-        for(int i = 0; i < amount_vertices - 1; ++i)
+        while(!queue.empty())
         {
-            while(!queue.empty())
+            T v = queue.begin() -> second;
+            queue.erase(queue.begin());
+
+            std::vector<typename Graph<T, W>::Edge> neighbors = graph.GetEdgesOfVertrex(v);
+
+            for_each(neighbors.begin(), neighbors.end(), [&](const typename Graph<T, W>::Edge& edge)
             {
-                T v = queue.begin() -> second;
-                queue.erase(queue.begin());
-
-                std::vector<typename Graph<T, W>::Edge> neighbors = graph.GetEdgesOfVertrex(v);
-
-                for_each(neighbors.begin(), neighbors.end(), [&](const typename Graph<T, W>::Edge& edge)
+                if(shortest_ways[edge._first] != INT_MAX)
                 {
-                    if(shortest_ways[edge._first] != INT_MAX)
+                    if(shortest_ways[edge._first] + edge._weight < shortest_ways[edge._second])
                     {
-                        if(shortest_ways[edge._first] + edge._weight < shortest_ways[edge._second])
+                        shortest_ways[edge._second] = shortest_ways[edge._first] + edge._weight;
+
+                        for(auto it = queue.begin(), end = queue.end();
+                            it != end;
+                            ++it)
                         {
-                            shortest_ways[edge._second] = shortest_ways[edge._first] + edge._weight;
-
-                            for(auto it = queue.begin(), end = queue.end();
-                                it != end;
-                                ++it)
+                            if(it -> second == edge._second)
                             {
-                                if(it -> second == edge._second)
-                                {
-                                    queue.erase(it);
-                                    queue.insert({shortest_ways[edge._second], edge._second});
-                                    break;
-                                }
+                                queue.erase(it);
+                                queue.insert({shortest_ways[edge._second], edge._second});
+                                break;
                             }
-
                         }
+
                     }
-                });
-
-            }
-
+                }
+            });
 
         }
+
 
         for_each(shortest_ways.begin(), shortest_ways.end(), [&](const std::pair<T, W>& way)
         {
             if(way.second == INT_MAX)
-                std::cout << way.first << " -> " << "00" << std::endl;
+                std::cout << way.first << " -> " << "-1" << std::endl;
             else
                 std::cout << way.first << " -> " << way.second << std::endl;
         });
 
     }
 }
+*/
 
+/*template<typename T,typename W>
+class Comparator
+{
+    bool operator() (const std::pair<W, T>& first, const std::pair<W, T>& second)
+    {
+        return first.first > second.first;
+    }
+};*/
+
+template<typename T, typename W,
+             template<
+                 class P,
+                 class Container = std::vector<P>,
+                 class Compare = std::greater<typename Container::value_type>
+             > class priority_queue
+         >
+void Dijkstra(Graph<T, W>& graph, const T& vertex, int amount_vertices)
+{
+    std::map<T, W> shortest_ways; //(vertex, distanse, distanse + heuristic)
+    std::map<T, bool> visit;
+    priority_queue<std::pair<W, T> > queue;
+
+    for(auto it = graph.Begin(), end = graph.End();
+        it != end;
+        ++it)
+    {
+        shortest_ways[*it] = INT_MAX;
+        visit[*it] = false;
+        if(*it != vertex)
+            queue.push({INT_MAX,*it});
+        else
+            queue.push({0,*it});
+    }
+
+    int size = queue.size();
+
+    shortest_ways[vertex] = 0;
+
+    while(--size >= 0)
+    {
+        T v = queue.top().second;
+        queue.pop();
+
+        if(!visit[v])
+        {
+
+            std::vector<typename Graph<T, W>::Edge> neighbors = graph.GetEdgesOfVertrex(v);
+
+            for_each(neighbors.begin(), neighbors.end(), [&](const typename Graph<T, W>::Edge& edge)
+            {
+                if(shortest_ways[edge._first] != INT_MAX)
+                {
+                    if(shortest_ways[edge._first] + edge._weight < shortest_ways[edge._second])
+                    {
+                        shortest_ways[edge._second] = shortest_ways[edge._first] + edge._weight;
+                        queue.push({shortest_ways[edge._first] + edge._weight, edge._second});
+                    }
+                }
+            });
+
+            visit[v] = true;
+        }
+
+    }
+
+    for_each(shortest_ways.begin(), shortest_ways.end(), [&](const std::pair<T, W>& way)
+    {
+        if(way.second == INT_MAX)
+        {
+            std::cout << "-1" << std::endl;
+            //std::cout << way.first << " -> " << "-1" << std::endl;
+        }
+        else
+        {
+            std::cout << way.second << std::endl;
+            //std::cout << way.first << " -> " << way.second << std::endl;
+        }
+    });
+}
+
+template<typename T, typename W,
+             template<
+                 class P,
+                 class Container = std::vector<P>,
+                 class Compare = std::greater<typename Container::value_type>
+             > class priority_queue
+         >
+void AStar(Graph<T, W>& graph, const T& vertex, const T& target, std::map<T, W> heuristic, int amount_vertices)
+{
+    std::map<T, std::pair<W, W> > shortest_ways; //(vertex, distanse, distanse + heuristic)
+    std::map<T, bool> visit;
+    priority_queue<std::pair<W, T> > queue;
+
+    for(auto it = graph.Begin(), end = graph.End();
+        it != end;
+        ++it)
+    {
+        shortest_ways[*it] = {INT_MAX, INT_MAX};
+        visit[*it] = false;
+        if(*it != vertex)
+            queue.push({INT_MAX,*it});
+        else
+            queue.push({0,*it});
+    }
+
+    int size = queue.size();
+
+    shortest_ways[vertex] = {0, 0};
+
+    while(--size >= 0)
+    {
+        T v = queue.top() -> second;
+
+        if(v == target)
+        {
+            break;
+        }
+        queue.pop();
+
+        if(!visit[v])
+        {
+
+            std::vector<typename Graph<T, W>::Edge> neighbors = graph.GetEdgesOfVertrex(v);
+
+            for_each(neighbors.begin(), neighbors.end(), [&](const typename Graph<T, W>::Edge& edge)
+            {
+                if(shortest_ways[edge._first] != std::make_pair(INT_MAX, INT_MAX) )
+                {
+                    if(shortest_ways[edge._first].first + edge._weight < shortest_ways[edge._second].first)
+                    {
+                        shortest_ways[edge._second] = {shortest_ways[edge._first].first + edge._weight,
+                                                       shortest_ways[edge._first].first + edge._weight +
+                                                       heuristic[edge._second]};
+
+                        queue.push({shortest_ways[edge._first].first + edge._weight + heuristic[edge._second],
+                                    edge._second});
+
+                    }
+                }
+            });
+
+            visit[v] = true;
+        }
+
+    }
+
+    if(shortest_ways[target] == INT_MAX)
+        std::cout << vertex << " -> " << target << " = -1" << std::endl;
+    else
+        std::cout << vertex << " -> " << target << " = " << shortest_ways[target] << std::endl;
+
+}
+
+void Fifteen(std::vector<int>& start_position)
+{
+
+}
