@@ -2,12 +2,9 @@
 #include <algorithm>
 #include <climits>
 #include <iostream>
-#include <fstream>
-#include <functional>
-#include <list>
 #include <map>
-#include <queue>
-#include <tuple>
+#include <memory>
+#include <set>
 #include <vector>
 #include "Graph.h"
 
@@ -384,10 +381,5 @@ void AStar(Graph<T, W>& graph, const T& vertex, const T& target, std::map<T, W> 
         std::cout << vertex << " -> " << target << " = -1" << std::endl;
     else
         std::cout << vertex << " -> " << target << " = " << shortest_ways[target] << std::endl;
-
-}
-
-void Fifteen(std::vector<int>& start_position)
-{
 
 }
