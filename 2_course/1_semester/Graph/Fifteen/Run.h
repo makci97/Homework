@@ -2,9 +2,6 @@
 #include <iostream>
 #include <vector>
 #include <queue>
-#include "SCC/SCC.h"
-#include "ShortestWays/ShortestWays.h"
-#include "Fifteen/Fifteen.h"
 
 /*
 0 - Тарьян
@@ -58,7 +55,7 @@ int Run(std::istream &in)
 
         return 0;
     }
-
+/*
     int amount_edges, amount_vertices;
     in >> amount_vertices >> amount_edges;
 
@@ -113,10 +110,10 @@ int Run(std::istream &in)
     default:
         break;
     }
-
+*/
     return 0;
 }
-
+/*
 template<typename T, typename W>
 void SCC(Graph<T, W>& graph, int flag, int amount_edges, int amount_vertices)
 {

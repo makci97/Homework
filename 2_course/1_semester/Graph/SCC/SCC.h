@@ -7,7 +7,7 @@
 #include <map>
 #include <tuple>
 #include <vector>
-#include "Graph.h"
+#include "../Graph.h"
 
 
 enum Color { white, grey, black};

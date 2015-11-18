@@ -8,12 +8,7 @@
 #include "Graph.h"
 #include "Fifteen.h"
 
-
-std::map<position, ptr> created;
-
-position::position(const std::vector<int>& state):
-                    _state(state), _visit(0), 
-                    _dist(-1), _heur_with_dist(-1)
+position::position(const std::vector<int>& state):_state(state)
 {
     int i = 0;
     while(i < 16 && state[i] != 0)
@@ -37,7 +32,7 @@ int position::Heuristic() const
 }
 
 
-void position::GetNeighbors(v_ptr &neighbors) const
+void position::GetNeighbors(v_ptr &neighbors, std::map<position, ptr>& created) const
 {
     position buf = *this;
     neighbors.clear();
@@ -113,6 +108,11 @@ void position::SetParent(ptr parent)
     _parent = parent;
 }
 
+bool position::operator<(const position& other) const
+{
+    return _state < other._state;
+}
+
 //if not work, then rewrite for zero
 bool solvability(std::vector<int>& start)
 {
@@ -142,7 +142,7 @@ bool solvability(std::vector<int>& start)
     return false;
 }
 
-
+/*
 template< template<
                        class P,
                        class Container = std::vector<P>,
@@ -217,3 +217,4 @@ void Fifteen(std::vector<int>& start)
     }
 
 }
+*/

@@ -4,6 +4,7 @@ add_subdirectory(Fifteen)
 add_subdirectory(Heaps)
 add_subdirectory(SCC)
 add_subdirectory(ShortestWays)
+add_subdirectory(tests)
 
 project(Graph2)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")

@@ -6,7 +6,7 @@
 #include <memory>
 #include <set>
 #include <vector>
-#include "Graph.h"
+#include "../Graph.h"
 
 
 template<typename T, typename W>
@@ -32,8 +32,6 @@ template<typename T, typename W,
              > class priority_queue
          >
 void AStar(Graph<T, W>& graph, const T& vertex, const T& target, std::map<T, W> heuristic, int amount_vertices);
-
-void Fifteen(std::vector<int>& start_position);
 
 template<typename T, typename W>
 void ReadHeuristic(std::map<T, W> heuristic, int amount_vertices, std::istream &in)
