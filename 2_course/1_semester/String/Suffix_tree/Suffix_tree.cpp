@@ -121,21 +121,6 @@ void suffix_node::rewrite_edge(char c, suffix_edge edge)
     _edges[c] = edge;
 }
 
-/*
-bool suffix_node::insert_node(char c, active_point point)
-{
-
-}
-
-suffix_node* suffix_node::travel(char c)
-{
-    if(!this->check_edge(c))
-        return this;
-
-    auto it = this->_edges.find(c);
-    return it->get_to();
-}
-*/
 //***************************************************************************
 //active_point
 //***************************************************************************
@@ -181,6 +166,48 @@ inline suffix_edge active_point::get_edge() const
 inline long int active_point::get_length() const
 {
     return _active_length;
+}
+
+bool active_point::prepare_traveler(const std::string& text)
+{
+    if(_active_edge != '\0' &&
+       this->get_edge().get_begin() + _active_length >= text.size()
+      )
+    {
+        //travaler leave our space
+        return false;
+    }
+
+    bool flag = true;
+
+    if(_active_node->check_edge(_active_edge) &&
+        _active_node->get_length(_active_edge, text)
+        <= _active_length
+      )
+    {
+        //bad state of active_point
+        suffix_node *node = _active_node;
+        long int length = _active_length;
+        char c = _active_edge;
+
+        while(node->get_length(c, text) <= length)
+        {
+            length -= node->get_length(c, text);
+            node = node->get_edge(c).get_to();
+            assert(node != NULL);
+            if(length > 0)
+                c = text[text.size() - length];
+            else
+            {
+                c = '\0';
+                break;
+            }
+        }
+
+        this->set_point(node, c, length);
+    }
+
+    return flag;
 }
 
 //***************************************************************************
@@ -251,22 +278,6 @@ void suffix_tree::insert(char cur_char, suffix_node*& last_added)
         //bad state
         long int length = _point.get_length();
         char c = _point.get_char();
-        /*
-        while(link->get_length(c, _text) <= length)
-        {
-            length -= link->get_length(c, _text);
-            link = link->get_edge(c).get_to();
-            assert(link != NULL);
-            if(length > 0)
-                c = _text[_text.size() - length];
-            else
-            {
-                c = '\0';
-                break;
-            }
-        }
-
-*/
         _point.set_point(link, c, length);
     }
 
@@ -290,6 +301,7 @@ void suffix_tree::add_char(char c)
 
     while(_remainder > 0 && !move)
     {
+        /*
 
         if(_point.get_node()->get_length(_point.get_char(), _text)
                 <= _point.get_length() &&
@@ -317,6 +329,8 @@ void suffix_tree::add_char(char c)
 
             _point.set_point(node, c, length);
         }
+        */
+        _point.prepare_traveler(_text);
         //active_point is true for this step
 
         if(_point.get_length() == 0)
@@ -326,7 +340,6 @@ void suffix_tree::add_char(char c)
             {
                 //move active_point
                 _point.set_point(_point.get_node(), c, 1);
-                //***********************************************
                 move = true;
             }
             else
@@ -350,11 +363,7 @@ void suffix_tree::add_char(char c)
 
             if(_text[edge.get_begin() + _point.get_length()] == c)
             {
-                //move active_point
-                //if(_point.get_edge().get_length(_text) > _point.get_length())
                 _point.set_length(_point.get_length() + 1);
-                    //*******************************
-
                 move = true;
             }
             else
@@ -380,7 +389,94 @@ void suffix_tree::delete_node(suffix_node* node)
     delete node;
 }
 
-std::vector<std::pair<int, int> > suffix_tree::gcs(const std::string& str)
-{
 
+std::pair<bool, long int> suffix_tree::find(const std::string& str)
+{
+    if(str.empty() || !_root->check_edge(str[0]))
+        return {false, -1};
+
+    bool flag = true;
+    active_point traveler;
+    traveler.set_point(_root, '\0', 0);
+
+    for(auto it = str.begin(), end = str.end();
+        it != end; ++it)
+    {
+        if(!trip(traveler, *it))
+        {
+            flag = false;
+            break;
+        }
+    }
+
+    if(flag == true)
+    {
+        long int index = traveler.get_edge().get_begin()
+                + traveler.get_length() - str.size();
+        return {true, index};
+    }
+    else
+        return {false, -1};
+}
+bool suffix_tree::trip(active_point& travaler, char c)
+{
+    //check traveler
+    if(!travaler.prepare_traveler(_text))
+        return false;
+    /*
+
+    if(travaler.get_node()->get_length(travaler.get_char(), _text)
+            <= travaler.get_length() &&
+            travaler.get_node()->check_edge(travaler.get_char())
+      )
+    {
+        //bad state of active_point
+        suffix_node *node = travaler.get_node();
+        long int length = travaler.get_length();
+        char c = travaler.get_char();
+
+        while(node->get_length(c, _text) <= length)
+        {
+            length -= node->get_length(c, _text);
+            node = node->get_edge(c).get_to();
+            assert(node != NULL);
+            if(length > 0)
+                c = _text[_text.size() - length];
+            else
+            {
+                c = '\0';
+                break;
+            }
+        }
+
+        travaler.set_point(node, c, length);
+    }
+    */
+
+    //traveler ready for trip
+    bool flag = true;
+
+    if(travaler.get_char() == '\0')
+    {
+        //in node
+        if(travaler.get_node()->check_edge(c))
+        {
+            travaler.set_edge(c);
+            travaler.set_length(1);
+        }
+        else
+            flag = false;
+    }
+    else
+    {
+        //inside edge
+        long int index = travaler.get_edge().get_begin()
+                + travaler.get_length();
+        if(index < _text.size() && _text[index] == c)
+            travaler.set_length(travaler.get_length() + 1);
+        else
+            flag = false;
+    }
+
+    return flag;
 }

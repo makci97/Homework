@@ -50,7 +50,6 @@ struct suffix_node
     bool check_edge(char c) const;
     void rewrite_edge(char c, suffix_edge edge);
     /*
-    bool insert_node(char c, active_point point);
     suffix_node* travel(char c);
     */
 
@@ -70,6 +69,9 @@ struct active_point
     inline suffix_edge get_edge() const;
     inline long int get_length() const;
 
+    //check and update traveler's position
+    bool prepare_traveler(const std::string &text);
+
     suffix_node* _active_node;
     char _active_edge;
     long int _active_length;
@@ -81,8 +83,11 @@ public:
     suffix_tree(const std::string& str);
     ~suffix_tree();
 
+    //return true if str included in _text else false with -1
+    //if true then return index of first str's char
+    std::pair<bool, long int> find(const std::string& str);
     //greatest suffix of each preffix of str
-    std::vector<std::pair<int, int> > gcs(const std::string& str);
+    //std::vector<std::pair<int, int> > gcs(const std::string& str);
 
 private:
     std::string _text;      //text for building tree
@@ -93,5 +98,6 @@ private:
     void rule(rules flag);      //one of three special actions
     void insert(char cur_char, suffix_node *&last_added); //insert node in _point
     void add_char(char c);      //one stage of creation
+    bool trip(active_point& travaler, char c);  //move traveler towards c
     void delete_node(suffix_node* node);
 };
