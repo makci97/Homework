@@ -66,18 +66,6 @@ inline suffix_node* suffix_node::get_link()
     return _s_link;
 }
 
-suffix_node* suffix_node::get_neighbour(char c)
-{
-    auto it = _edges.find(c);
-
-    if(it != _edges.end())
-    {
-        return it->second.get_to();
-    }
-
-    return this;
-}
-
 suffix_edge suffix_node::get_edge(char c)
 {
     auto it = _edges.find(c);
@@ -124,7 +112,6 @@ void suffix_node::rewrite_edge(char c, suffix_edge edge)
 //***************************************************************************
 //active_point
 //***************************************************************************
-
 
 inline void active_point::set_point(suffix_node *node, char edge, long int length)
 {
@@ -234,11 +221,6 @@ suffix_tree::~suffix_tree()
     delete_node(_root);
 }
 
-void suffix_tree::rule(rules flag)
-{
-
-}
-
 void suffix_tree::insert(char cur_char, suffix_node*& last_added)
 {
     suffix_edge main_edge, part_of_old, new_edge;
@@ -301,35 +283,6 @@ void suffix_tree::add_char(char c)
 
     while(_remainder > 0 && !move)
     {
-        /*
-
-        if(_point.get_node()->get_length(_point.get_char(), _text)
-                <= _point.get_length() &&
-                _point.get_node()->check_edge(_point.get_char())
-          )
-        {
-            //bad state of active_point
-            suffix_node *node = _point.get_node();
-            long int length = _point.get_length();
-            char c = _point.get_char();
-
-            while(node->get_length(c, _text) <= length)
-            {
-                length -= node->get_length(c, _text);
-                node = node->get_edge(c).get_to();
-                assert(node != NULL);
-                if(length > 0)
-                    c = _text[_text.size() - length];
-                else
-                {
-                    c = '\0';
-                    break;
-                }
-            }
-
-            _point.set_point(node, c, length);
-        }
-        */
         _point.prepare_traveler(_text);
         //active_point is true for this step
 
@@ -423,37 +376,8 @@ bool suffix_tree::trip(active_point& travaler, char c)
     //check traveler
     if(!travaler.prepare_traveler(_text))
         return false;
-    /*
-
-    if(travaler.get_node()->get_length(travaler.get_char(), _text)
-            <= travaler.get_length() &&
-            travaler.get_node()->check_edge(travaler.get_char())
-      )
-    {
-        //bad state of active_point
-        suffix_node *node = travaler.get_node();
-        long int length = travaler.get_length();
-        char c = travaler.get_char();
-
-        while(node->get_length(c, _text) <= length)
-        {
-            length -= node->get_length(c, _text);
-            node = node->get_edge(c).get_to();
-            assert(node != NULL);
-            if(length > 0)
-                c = _text[_text.size() - length];
-            else
-            {
-                c = '\0';
-                break;
-            }
-        }
-
-        travaler.set_point(node, c, length);
-    }
-    */
-
     //traveler ready for trip
+
     bool flag = true;
 
     if(travaler.get_char() == '\0')

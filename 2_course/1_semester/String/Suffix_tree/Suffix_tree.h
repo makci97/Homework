@@ -4,9 +4,6 @@
 #include <string>
 #include <vector>
 
-//rules for special actions
-enum rules{from_root, suffix_link, from_other};
-
 struct suffix_node;
 struct active_point;
 
@@ -42,16 +39,12 @@ struct suffix_node
     inline void set_link(suffix_node* link);
 
     inline suffix_node* get_link();
-    suffix_node* get_neighbour(char c);
     suffix_edge get_edge(char c);       //you must check edge before useing
     inline long int get_length(char c, const std::string& text) const;
 
     bool push_edge(suffix_edge edge);
     bool check_edge(char c) const;
     void rewrite_edge(char c, suffix_edge edge);
-    /*
-    suffix_node* travel(char c);
-    */
 
     std::map<char, suffix_edge> _edges; //edges from this node for chars
     suffix_node* _s_link;               //suffix link
@@ -86,8 +79,6 @@ public:
     //return true if str included in _text else false with -1
     //if true then return index of first str's char
     std::pair<bool, long int> find(const std::string& str);
-    //greatest suffix of each preffix of str
-    //std::vector<std::pair<int, int> > gcs(const std::string& str);
 
 private:
     std::string _text;      //text for building tree
@@ -95,7 +86,6 @@ private:
     suffix_node* _root;     //root of tree
     long int _remainder;    //amount of remains suffix
 
-    void rule(rules flag);      //one of three special actions
     void insert(char cur_char, suffix_node *&last_added); //insert node in _point
     void add_char(char c);      //one stage of creation
     bool trip(active_point& travaler, char c);  //move traveler towards c
