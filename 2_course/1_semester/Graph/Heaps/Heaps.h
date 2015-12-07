@@ -7,7 +7,7 @@
 
 
 template<class T, class Container = std::vector<T>,
-         class Compare = std::less<typename Container::value_type>
+         class Compare = std::greater<typename Container::value_type>
         >
 struct binomial_tree
 {
@@ -27,7 +27,7 @@ struct binomial_tree
 
 
 template<class T, class Container = std::vector<T>,
-         class Compare = std::less<typename Container::value_type>
+         class Compare = std::greater<typename Container::value_type>
         >
 class binomial_heap
 {
@@ -39,8 +39,8 @@ public:
     binomial_heap(): _min_it(_list_of_roots.end()){}
 
     bool empty() const;
-    int size() const;       //amount of trees in heap
-    int true_size() const;
+    int fast_size() const;       //amount of trees in heap
+    int size() const;
     value_type top();
     void push(const value_type& new_elem);
     void pop();
@@ -97,7 +97,7 @@ std::pair<bool, typename binomial_tree<T, Container, Compare>::b_t_ptr>
         return {false, first};
 
     Compare comp;
-    if(!comp(first->_data, second->_data))
+    if(!comp(second->_data, first->_data))
     {
         first->_parent = second;
         second->_childreen.push_front(first);
@@ -124,19 +124,22 @@ bool binomial_heap<T, Container, Compare>::empty() const
 }
 
 template<class T, class Container, class Compare>
-int binomial_heap<T, Container, Compare>::size() const
+int binomial_heap<T, Container, Compare>::fast_size() const
 {
     return _list_of_roots.size();
 }
 
 template<class T, class Container, class Compare>
-int binomial_heap<T, Container, Compare>::true_size() const
+int binomial_heap<T, Container, Compare>::size() const
 {
     int size = 0;
     for(auto it = _list_of_roots.begin(), end = _list_of_roots.end();
         it != end; ++it)
-
+    {
         size += (*it)->size();
+    }
+
+    return size;
 }
 
 template<class T, class Container, class Compare>
@@ -152,6 +155,9 @@ void binomial_heap<T, Container, Compare>::push(const value_type& new_elem)
 {
     std::shared_ptr<b_t> tree_ptr(new b_t(new_elem));
     this->fast_merge(tree_ptr);
+
+    if(_min_it == _list_of_roots.end())
+        this->refresh_min();
 }
 
 template<class T, class Container, class Compare>
@@ -192,11 +198,11 @@ template<class T, class Container, class Compare>
 bool binomial_heap<T, Container, Compare>::decrease_key(typename b_t::b_t_ptr node, value_type key)
 {
     Compare comp;
-    if(comp(key, node->_data))
+    if(comp(node->_data, key))
         return true;
 
     node->_data = key;
-    while(node->_parent != nullptr && comp(key, node->_parent->_data))
+    while(node->_parent != nullptr && comp(node->_parent->_data, key))
     {
         auto it = std::find(node->_parent->_childreen.begin(),
                             node->_parent->_childreen.end(), node);
@@ -265,7 +271,7 @@ void binomial_heap<T, Container, Compare>::refresh_min()
     for(auto it = _list_of_roots.begin(), end = _list_of_roots.end();
         it != end; ++it)
     {
-        if(comp((*it)->top(), (*_min_it)->top()) )
+        if(comp((*_min_it)->top(), (*it)->top()) )
             _min_it = it;
     }
 }
@@ -275,7 +281,7 @@ void binomial_heap<T, Container, Compare>::fast_merge(std::shared_ptr<b_t> tree_
 {
     Compare comp;
     bool tree_is_min = _list_of_roots.empty() ||
-                        comp(tree_ptr->_data, (*_min_it)->_data);
+                        comp((*_min_it)->_data, tree_ptr->_data);
     bool flag = true;
 
     auto it = _list_of_roots.begin(), end = _list_of_roots.end();
