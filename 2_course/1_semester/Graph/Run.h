@@ -5,6 +5,7 @@
 #include "SCC/SCC.h"
 #include "ShortestWays/ShortestWays.h"
 #include "Fifteen/Fifteen.h"
+#include "Heaps/Heaps.h"
 
 /*
 0 - Тарьян
@@ -39,7 +40,7 @@
 */
 
 template<typename T, typename W>
-int Run(std::istream &in)
+void Run(std::istream &in)
 {
     int flag;
     in >> flag;
@@ -56,7 +57,7 @@ int Run(std::istream &in)
 
         Fifteen<std::priority_queue>(start_position);
 
-        return 0;
+        return;
     }
 
     int amount_edges, amount_vertices;
@@ -99,7 +100,7 @@ int Run(std::istream &in)
 
         break;
     case 11:
-
+        Dijkstra<T, W, binomial_heap> (graph, vertex, amount_vertices);
         break;
     case 12:
 
@@ -114,7 +115,7 @@ int Run(std::istream &in)
         break;
     }
 
-    return 0;
+    return;
 }
 
 template<typename T, typename W>

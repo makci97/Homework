@@ -3,7 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include "Graph.h"
-#include "SCC.h"
+#include "SCC/SCC.h"
 
 BOOST_AUTO_TEST_CASE(Read_graph)
 {

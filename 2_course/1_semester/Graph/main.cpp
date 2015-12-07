@@ -6,7 +6,7 @@
 
 int main()
 {
-    std::ifstream is("test_FW.txt");
+    std::ifstream is("test_Fifteen.txt");
     Run<int, int>(is);
     return 0;
 }

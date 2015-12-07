@@ -1,7 +1,7 @@
 #include "../SCC/SCC.h"
 #include "../ShortestWays/ShortestWays.h"
 #include "../Run.h"
-#include "Fifteen.h"
+#include "Fifteen.cpp"
 
 
 int main()

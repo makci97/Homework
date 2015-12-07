@@ -10,8 +10,4 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 add_executable(Graph2 Graph.h SCC/SCC.h Run.h Fifteen/Fifteen.h ShortestWays/ShortestWays.h main.cpp)
 
-project(UT) 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-
-add_executable(UT Graph.h SCC/SCC.h ShortestWays/ShortestWays.h UT.cpp)
 

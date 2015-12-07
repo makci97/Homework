@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <queue>
+#include "Fifteen1.cpp"
 
 /*
 0 - Тарьян
