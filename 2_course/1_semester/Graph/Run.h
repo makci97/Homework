@@ -156,13 +156,3 @@ void SCC(Graph<T, W>& graph, int flag, int amount_edges, int amount_vertices)
     }
 
 }
-
-/*
-    std::ifstream is("test_graph.txt");
-    int flag, amount_edges, amount_vertices;
-    is >> flag;
-    is >> amount_vertices >> amount_edges;
-
-    Graph<int, int> graph;
-    ReadGraph<int, int>(graph, amount_edges, is);
-*/

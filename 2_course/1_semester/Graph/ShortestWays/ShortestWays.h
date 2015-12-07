@@ -216,12 +216,10 @@ void Dijkstra(Graph<T, W>& graph, const T& vertex, int amount_vertices)
         if(way.second == INT_MAX)
         {
             std::cout << "-1" << std::endl;
-            //std::cout << way.first << " -> " << "-1" << std::endl;
         }
         else
         {
             std::cout << way.second << std::endl;
-            //std::cout << way.first << " -> " << way.second << std::endl;
         }
     });
 }

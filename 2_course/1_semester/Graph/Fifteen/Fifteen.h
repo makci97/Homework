@@ -90,9 +90,7 @@ void position::GetNeighbors(v_ptr &neighbors, std::map<position, ptr>& created) 
             {
                 ptr buf_ptr = std::make_shared<position>(buf);
                 neighbors.push_back(buf_ptr);
-                //std::cout << buf_ptr ->GetPositionOfZero() << std::endl;
                 created.insert(std::make_pair(buf, buf_ptr) );
-                //created[buf] = buf_ptr;
             }
             else
             {
@@ -112,44 +110,32 @@ bool position::Move(route move)
         if(_pos_zero - 4 < 0)
             return false;
 
-        //buf1 = _state[_pos_zero] - _state[_pos_zero - 4];
         std::swap(_state[_pos_zero], _state[_pos_zero - 4]);
-        //buf2 = _state[_pos_zero] - _state[_pos_zero - 4];
         _pos_zero -= 4;
-        //std::cout << " d_buf Up = " << buf1+buf2 << std::endl;
         return true;
         break;
     case Down:
         if(_pos_zero + 4 > 15)
             return false;
 
-        //buf1 = _state[_pos_zero] - _state[_pos_zero + 4];
         std::swap(_state[_pos_zero], _state[_pos_zero + 4]);
-        //buf2 = _state[_pos_zero] - _state[_pos_zero + 4];
         _pos_zero += 4;
-        //std::cout << " d_buf Down = " << buf1+buf2 << std::endl;
         return true;
         break;
     case Left:
         if(_pos_zero % 4 == 0)
             return false;
 
-        //buf1 = _state[_pos_zero] - _state[_pos_zero - 1];
         std::swap(_state[_pos_zero], _state[_pos_zero - 1]);
-        //buf2 = _state[_pos_zero] - _state[_pos_zero - 1];
         _pos_zero -= 1;
-        //std::cout << " d_buf Left = " << buf1+buf2 << std::endl;
         return true;
         break;
     case Right:
         if( (_pos_zero + 1) % 4 == 0)
             return false;
 
-        //buf1 = _state[_pos_zero] - _state[_pos_zero + 1];
         std::swap(_state[_pos_zero], _state[_pos_zero + 1]);
-        //buf2 = _state[_pos_zero] - _state[_pos_zero + 1];
         _pos_zero += 1;
-        //std::cout << " d_buf Right = " << buf1+buf2 << std::endl;
         return true;
         break;
     default:
@@ -306,4 +292,3 @@ void Fifteen(std::vector<int>& start)
     }
 
 }
-
