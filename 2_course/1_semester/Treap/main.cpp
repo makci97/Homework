@@ -3,18 +3,11 @@
 
 int main()
 {
-/*
-    std::ifstream is("test_FW.txt");
-    Run<int, int>(is);
-    */
-    /*char a = 'a';
-    std::shared_ptr<char> aa = std::make_shared(a);
-    std::cout << "a = " << a << " *aa = " << *aa << std::endl;
-    ++*aa;
-    std::cout << "a = " << a << " *aa = " << *aa << std::endl;
-    binomial_tree<int> tree = 1;
-    std::cout << "deg = " << tree.degree()<< " size = " << tree.size()<<
-              " top = " << tree.top() << std::endl;
-    */
+    //int n = 10, k = 7;
+    int n, k;
+
+    std::cin >> n >> k;
+    std::cout << Josephus_problem(n, k) << std::endl;
+
     return 0;
 }
