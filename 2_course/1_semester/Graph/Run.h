@@ -1,11 +1,13 @@
 #pragma once
 #include <iostream>
+#include <map>
 #include <vector>
 #include <queue>
-#include "SCC/SCC.h"
-#include "ShortestWays/ShortestWays.h"
 #include "Fifteen/Fifteen.h"
 #include "Heaps/Heaps.h"
+#include "Minimum_spanning_tree/Minimum_spanning_tree.h"
+#include "SCC/SCC.h"
+#include "ShortestWays/ShortestWays.h"
 
 /*
 0 - Тарьян
@@ -59,6 +61,27 @@ void Run(std::istream &in)
 
         return;
     }
+    else if(flag == 7)
+    {
+        //flag == 7
+
+        int amount_edges, amount_vertices;
+        in >> amount_vertices >> amount_edges;
+
+        std::multimap<int, std::pair<int, int> > graph;
+
+        int from, to, weight;
+
+        for(int i = 0; i < amount_edges; ++i)
+        {
+            in >> from >> to >> weight;
+
+            graph.insert(std::make_pair(weight, std::make_pair(from, to)) );
+        }
+
+        std::cout << Kruskal_algorithm(amount_vertices, graph) << std::endl;
+        return;
+    }
 
     int amount_edges, amount_vertices;
     in >> amount_vertices >> amount_edges;
@@ -85,9 +108,6 @@ void Run(std::istream &in)
         FloydWarshall<T, W> (graph, amount_vertices);
         break;
     case 6:
-
-        break;
-    case 7:
 
         break;
     case 8:

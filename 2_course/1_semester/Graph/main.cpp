@@ -1,12 +1,14 @@
-#include "SCC/SCC.h"
-#include "ShortestWays/ShortestWays.h"
+#include <iostream>
+#include <fstream>
 #include "Run.h"
-#include "Fifteen/Fifteen.h"
 
 
 int main()
 {
-    //std::ifstream is("test_D.txt");
+    //std::ifstream is("test_MST.txt");
+    //Run<int, int>(is);
+
     Run<int, int>(std::cin);
+
     return 0;
 }
