@@ -3,7 +3,7 @@
 
 int main()
 {
-    //int n = 10, k = 7;
+    //int n = 9, k = 3;
     int n, k;
 
     std::cin >> n >> k;

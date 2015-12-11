@@ -477,6 +477,7 @@ inline void treap<Key, CompareKey>::delete_node(reference node)
 //Josephus problem
 //*************************************************************
 
+
 int Josephus_problem(int n, int k)
 {
     if(n < 1 || k <= 0)
@@ -493,12 +494,22 @@ int Josephus_problem(int n, int k)
 
     treap<int>::iterator cur(tree);
 
+    //number of last deleted element in tree in increase order
+    int number_in_tree = 1;
+
     while(cur.get_count() != 0 && n > 1)
     {
         //while _root.count != 0
-        int remain = k % n;
-        if(remain == 0)
-            remain = n;
+        number_in_tree += k - 1;
+        if(number_in_tree == 0)
+            number_in_tree = 1;
+
+        while(number_in_tree > n)
+            number_in_tree -= n;
+
+        int remain = number_in_tree;
+        if(remain <= 0)
+            remain += n;
 
         while(true)
         {
