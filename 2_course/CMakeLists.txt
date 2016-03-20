@@ -26,4 +26,5 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/bin.rele
 
 
 add_subdirectory(1_semester)
+add_subdirectory(2_semester)
 
