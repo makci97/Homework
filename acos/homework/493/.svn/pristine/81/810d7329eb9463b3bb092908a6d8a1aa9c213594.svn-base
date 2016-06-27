@@ -1,0 +1,9 @@
+ls: что-то непонятное 
+Getpwuid        : Success
+Getpwuid        : Success
+drwxr-xr-x 2    4096    Apr 12 14:57 3
+Getpwuid        : Success
+Getpwuid        : Success
+
+cat: проверка на сколько записали - правильно. Нет -u
+wc: обрабатывается не весь файл (проверка на EOF неправильная), при плохих файлах работу надо продолжать.
